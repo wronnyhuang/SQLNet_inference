@@ -1,0 +1,26 @@
+﻿sum_accommodation,sum of accommodation spend over past n months
+sum_accomodation_food_service,sum of accommodation food service spend over past n months
+sum_air_transportation,sum of air transportation spend over past n months
+sum_data_processing,sum of data processing spend over past n months
+sum_gasoline,sum of gasoline spend over past n months
+sum_information,sum of information sevices spend over past n months
+sum_oil_gas,sum of oil and gas spend over past n months
+sum_utilities,sum of utilities spend over past n months
+avg_accommodation,avg of accommodation spend over past n months
+avg_accomodation_food_service,avg of accommodation food service spend over past n months
+avg_air_transportation,avg of air transportation spend over past n months
+avg_data_processing,avg of data processing spend over past n months
+avg_gasoline,avg of gasoline spend over past n months
+avg_information,avg of information sevices spend over past n months
+avg_oil_gas,avg of oil and gas spend over past n months
+avg_utilities,avg of utilities spend over past n months
+acct_open_days,how many days the account has been open
+flag_credit,is this card a credit card
+consumer_business,c for consumer card and b for business card
+segment_low,low active spend account segment
+segment_seasonal,seasonally active spend account segment
+segment_high,high active spend account segment
+wkdy_split,ratio of spend during weekdays to weekends
+age,customer's age
+gender,customer's gender
+annual_income,customer's annual income
