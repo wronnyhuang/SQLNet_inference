@@ -1,4 +1,14 @@
-# SQLNet
+# SQLNet with inference
+
+First install the same dependencies as the original SQLNet. Then run
+
+`python infer.py --ca`
+
+This will allow you to run your own custom inference (English) statements on the existing SQL tables. It will then return the predicted SQL query and the execution result.
+
+---
+
+# SQLNet original documentation
 
 This repo provides an implementation of SQLNet and Seq2SQL neural networks for predicting SQL queries on [WikiSQL dataset](https://github.com/salesforce/WikiSQL). The paper is available at [here](https://arxiv.org/abs/1711.04436).
 
