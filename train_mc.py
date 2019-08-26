@@ -1,6 +1,6 @@
 from comet_ml import Experiment
 experiment = Experiment(api_key="vPCPPZrcrUBitgoQkvzxdsh9k", parse_args=False, project_name='sqlnet', workspace="wronnyhuang")
-experiment.set_name('test_mc')
+experiment.set_name('train_mc')
 
 import json
 import torch
@@ -54,9 +54,14 @@ if __name__ == '__main__':
             TRAIN_DB, DEV_DB, TEST_DB = load_dataset(
                     args.dataset, use_small=USE_SMALL)
     
+    # concartenate mastercard dummy dataset with wikisql
     dummy_sql_data, dummy_table_data = load_dataset_dummy(0)
     sql_data.append(dummy_sql_data[0])
     table_data.update(dummy_table_data)
+    
+    # optinoal: train only on dummy
+    sql_data = dummy_sql_data
+    table_data = dummy_table_data
 
     tic = time()
     word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), \
@@ -87,17 +92,16 @@ if __name__ == '__main__':
         model.cond_pred.load_state_dict(torch.load(cond_lm))
 
     if not args.rl:
-        print 'init'
-        init_acc = epoch_acc(model, BATCH_SIZE,
-                val_sql_data, val_table_data, TRAIN_ENTRY)
-        best_agg_acc = init_acc[1][0]
-        best_agg_idx = 0
-        best_sel_acc = init_acc[1][1]
-        best_sel_idx = 0
-        best_cond_acc = init_acc[1][2]
-        best_cond_idx = 0
-        print 'Init dev acc_qm: %s\n  breakdown on (agg, sel, where): %s'%\
-                init_acc
+        # print 'init'
+        # init_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
+        # best_agg_acc = init_acc[1][0]
+        # best_agg_idx = 0
+        # best_sel_acc = init_acc[1][1]
+        # best_sel_idx = 0
+        # best_cond_acc = init_acc[1][2]
+        # best_cond_idx = 0
+        # print 'Init dev acc_qm: %s\n  breakdown on (agg, sel, where): %s'%\
+        #         init_acc
         
         if TRAIN_AGG:
             torch.save(model.agg_pred.state_dict(), agg_m)
@@ -112,61 +116,61 @@ if __name__ == '__main__':
             if args.train_emb:
                 torch.save(model.cond_embed_layer.state_dict(), cond_e)
                 
-        for i in range(100):
+        for i in range(5000):
             
             print 'Epoch %d @ %s'%(i+1, datetime.datetime.now())
             
             loss_epoch = epoch_train(model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY)
             print ' Loss = %s'%loss_epoch
             
-            train_acc_qm = epoch_acc(model, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY)
+            train_acc_qm = epoch_acc(model, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, epoch=i)
             print ' Train acc_qm: %s\n   breakdown result: %s'%train_acc_qm
             
             #val_acc = epoch_token_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
-            val_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
-            print ' Dev acc_qm: %s\n   breakdown result: %s'%val_acc
+            # val_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
+            # print ' Dev acc_qm: %s\n   breakdown result: %s'%val_acc
             
             # comet logging
             experiment.log_metric('loss', loss_epoch, step=i)
             experiment.log_metric('train_acc_qm', train_acc_qm[0], step=i)
-            experiment.log_metric('val_acc', val_acc[0], step=i)
+            # experiment.log_metric('val_acc', val_acc[0], step=i)
             
-            if TRAIN_AGG:
-                if val_acc[1][0] > best_agg_acc:
-                    best_agg_acc = val_acc[1][0]
-                    best_agg_idx = i+1
-                    torch.save(model.agg_pred.state_dict(),
-                        'saved_model/epoch%d.agg_model%s'%(i+1, args.suffix))
-                    torch.save(model.agg_pred.state_dict(), agg_m)
-                    if args.train_emb:
-                        torch.save(model.agg_embed_layer.state_dict(),
-                        'saved_model/epoch%d.agg_embed%s'%(i+1, args.suffix))
-                        torch.save(model.agg_embed_layer.state_dict(), agg_e)
-            if TRAIN_SEL:
-                if val_acc[1][1] > best_sel_acc:
-                    best_sel_acc = val_acc[1][1]
-                    best_sel_idx = i+1
-                    torch.save(model.sel_pred.state_dict(),
-                        'saved_model/epoch%d.sel_model%s'%(i+1, args.suffix))
-                    torch.save(model.sel_pred.state_dict(), sel_m)
-                    if args.train_emb:
-                        torch.save(model.sel_embed_layer.state_dict(),
-                        'saved_model/epoch%d.sel_embed%s'%(i+1, args.suffix))
-                        torch.save(model.sel_embed_layer.state_dict(), sel_e)
-            if TRAIN_COND:
-                if val_acc[1][2] > best_cond_acc:
-                    best_cond_acc = val_acc[1][2]
-                    best_cond_idx = i+1
-                    torch.save(model.cond_pred.state_dict(),
-                        'saved_model/epoch%d.cond_model%s'%(i+1, args.suffix))
-                    torch.save(model.cond_pred.state_dict(), cond_m)
-                    if args.train_emb:
-                        torch.save(model.cond_embed_layer.state_dict(),
-                        'saved_model/epoch%d.cond_embed%s'%(i+1, args.suffix))
-                        torch.save(model.cond_embed_layer.state_dict(), cond_e)
-                        
-            print ' Best val acc = %s, on epoch %s individually'%(
-                    (best_agg_acc, best_sel_acc, best_cond_acc),
-                    (best_agg_idx, best_sel_idx, best_cond_idx))
+            # if TRAIN_AGG:
+            #     if val_acc[1][0] > best_agg_acc:
+            #         best_agg_acc = val_acc[1][0]
+            #         best_agg_idx = i+1
+            #         torch.save(model.agg_pred.state_dict(),
+            #             'saved_model/epoch%d.agg_model%s'%(i+1, args.suffix))
+            #         torch.save(model.agg_pred.state_dict(), agg_m)
+            #         if args.train_emb:
+            #             torch.save(model.agg_embed_layer.state_dict(),
+            #             'saved_model/epoch%d.agg_embed%s'%(i+1, args.suffix))
+            #             torch.save(model.agg_embed_layer.state_dict(), agg_e)
+            # if TRAIN_SEL:
+            #     if val_acc[1][1] > best_sel_acc:
+            #         best_sel_acc = val_acc[1][1]
+            #         best_sel_idx = i+1
+            #         torch.save(model.sel_pred.state_dict(),
+            #             'saved_model/epoch%d.sel_model%s'%(i+1, args.suffix))
+            #         torch.save(model.sel_pred.state_dict(), sel_m)
+            #         if args.train_emb:
+            #             torch.save(model.sel_embed_layer.state_dict(),
+            #             'saved_model/epoch%d.sel_embed%s'%(i+1, args.suffix))
+            #             torch.save(model.sel_embed_layer.state_dict(), sel_e)
+            # if TRAIN_COND:
+            #     if val_acc[1][2] > best_cond_acc:
+            #         best_cond_acc = val_acc[1][2]
+            #         best_cond_idx = i+1
+            #         torch.save(model.cond_pred.state_dict(),
+            #             'saved_model/epoch%d.cond_model%s'%(i+1, args.suffix))
+            #         torch.save(model.cond_pred.state_dict(), cond_m)
+            #         if args.train_emb:
+            #             torch.save(model.cond_embed_layer.state_dict(),
+            #             'saved_model/epoch%d.cond_embed%s'%(i+1, args.suffix))
+            #             torch.save(model.cond_embed_layer.state_dict(), cond_e)
+            #
+            # print ' Best val acc = %s, on epoch %s individually'%(
+            #         (best_agg_acc, best_sel_acc, best_cond_acc),
+            #         (best_agg_idx, best_sel_idx, best_cond_idx))
             
         experiment.log_asset_folder('saved_model')

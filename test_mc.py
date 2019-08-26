@@ -1,5 +1,6 @@
 from comet_ml import Experiment
 experiment = Experiment(api_key="vPCPPZrcrUBitgoQkvzxdsh9k", parse_args=False, project_name='sqlnet', workspace="wronnyhuang")
+experiment.set_name('test_mc')
 
 import json
 import torch
@@ -76,5 +77,5 @@ if __name__ == '__main__':
         print "Loading from %s"%cond_m
         model.cond_pred.load_state_dict(torch.load(cond_m))
 
-    val_acc = epoch_acc(model, BATCH_SIZE, dummy_sql_data, dummy_table_data, TEST_ENTRY)
+    val_acc = epoch_acc(model, BATCH_SIZE, dummy_sql_data, dummy_table_data, TEST_ENTRY, write=True)
     print "Dummy acc_qm: %s;\n  breakdown on (agg, sel, where): %s"%val_acc

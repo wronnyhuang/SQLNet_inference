@@ -98,7 +98,7 @@ def parse_sql(line, cols):
         cond[0] = cols.index(col)
     
         # parse right
-        right = where[condidx+1:]
+        right = where[condidx+len(condop):]
         val = right.strip()
         cond[2] = val
         
@@ -127,9 +127,9 @@ if __name__ == '__main__':
     
     stanford = StanfordTokenizer()
     
-    with open('pairs_moustafa.csv', 'r+') as f:
+    with open('pairs_ronny.csv', 'r+') as f:
         lines_pairs = f.readlines()[1:]
-    with open('mock_table.csv', 'r') as f:
+    with open('table_ronny.csv', 'r') as f:
         lines_table = f.readlines()
         
     # parse table
@@ -156,3 +156,4 @@ if __name__ == '__main__':
         f.write('\n')
     
     f.close()
+    os.system('cp dummy_tok.jsonl ../data/')

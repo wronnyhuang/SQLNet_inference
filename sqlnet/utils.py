@@ -147,18 +147,15 @@ def epoch_train(model, optimizer, batch_size, sql_data, table_data, pred_entry):
     while st < len(sql_data):
         ed = st+batch_size if st+batch_size < len(perm) else len(perm)
 
-        q_seq, col_seq, col_num, ans_seq, query_seq, gt_cond_seq = \
-                to_batch_seq(sql_data, table_data, perm, st, ed)
+        q_seq, col_seq, col_num, ans_seq, query_seq, gt_cond_seq = to_batch_seq(sql_data, table_data, perm, st, ed)
         gt_where_seq = model.generate_gt_where_seq(q_seq, col_seq, query_seq)
         gt_sel_seq = [x[1] for x in ans_seq]
-        score = model.forward(q_seq, col_seq, col_num, pred_entry,
-                gt_where=gt_where_seq, gt_cond=gt_cond_seq, gt_sel=gt_sel_seq)
+        score = model.forward(q_seq, col_seq, col_num, pred_entry, gt_where=gt_where_seq, gt_cond=gt_cond_seq, gt_sel=gt_sel_seq)
         loss = model.loss(score, ans_seq, pred_entry, gt_where_seq)
         cum_loss += loss.data.cpu().numpy()[0]*(ed - st)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
         st = ed
 
     return cum_loss / len(sql_data)
@@ -282,7 +279,7 @@ def input_tokenize_wrapper():
     output, err = process.communicate()
     return raw_q, eval(output)
 
-def epoch_acc(model, batch_size, sql_data, table_data, pred_entry):
+def epoch_acc(model, batch_size, sql_data, table_data, pred_entry, write=False, experiment=None, epoch=0):
     model.eval()
     perm = list(range(len(sql_data)))
     st = 0
@@ -302,9 +299,16 @@ def epoch_acc(model, batch_size, sql_data, table_data, pred_entry):
                 raw_q_seq, raw_col_seq, pred_entry)
         one_err, tot_err = model.check_acc(raw_data,
                 pred_queries, query_gt, pred_entry)
+
+        formatted = format_preds(raw_q_seq, raw_col_seq, pred_queries)
+        if write:
+            with open('mc.results', 'w') as f:
+                f.write(formatted)
         
-        with open('test_mc.results', 'w') as f:
-            f.write()
+        if not epoch % 10:
+            for line in formatted.split('\n'):
+                print(line)
+            
 
         one_acc_num += (ed-st-one_err)
         tot_acc_num += (ed-st-tot_err)
@@ -313,43 +317,46 @@ def epoch_acc(model, batch_size, sql_data, table_data, pred_entry):
     return tot_acc_num / len(sql_data), one_acc_num / len(sql_data)
 
 # RONNY ADDED
-def struct2str(raw_q_seq, raw_col_seq, pred_queries):
+def format_preds(raw_q_seq, raw_col_seq, pred_queries):
     
     agg_ops = ['', 'MAX', 'MIN', 'COUNT', 'SUM', 'AVG']
     cond_ops = ['EQL', 'GT', 'LT', 'OP']
     
-    with open('test_mc.results', 'w') as f:
-        for i in range(len(pred_queries)):
-            # initialize output string
-            out = ['SELECT']
+    res= []
+    for i in range(len(pred_queries)):
+        # initialize output string
+        out = ['SELECT']
+        
+        # select clause
+        selcol = raw_col_seq[i][pred_queries[i]['sel']]
+        if pred_queries[i]['agg'] != 0:
+            sel = agg_ops[pred_queries[i]['agg']] + '(' + selcol + ')'
+        else:
+            sel = selcol
+        out.append(sel)
+        
+        # from clause
+        out.append('FROM mock_time_machine')
+        
+        # where clause
+        out.append('WHERE')
+        for j, cond in enumerate(pred_queries[i]['conds']):
+            if j != 0:
+                out.append('AND')
+            wherecol = raw_col_seq[i][cond[0]]
+            whereop = cond_ops[cond[1]]
+            whereval = cond[2]
+            out.append(wherecol)
+            out.append(whereop)
+            out.append(whereval)
             
-            # select clause
-            selcol = raw_col_seq[i][pred_queries[i]['sel']]
-            if pred_queries[i]['agg'] != 0:
-                sel = agg_ops[pred_queries[i]['agg']] + '(' + selcol + ')'
-            else:
-                sel = selcol
-            out.append(sel)
-            
-            # from clause
-            out.append('FROM mock_time_machine')
-            
-            # where clause
-            out.append('WHERE')
-            for j, cond in enumerate(pred_queries[i]['conds']):
-                if j != 0:
-                    out.append('AND')
-                wherecol = raw_col_seq[i][cond[0]]
-                whereop = cond_ops[cond[1]]
-                whereval = cond[2]
-                out.append(wherecol)
-                out.append(whereop)
-                out.append(whereval)
-                
-            # write to file
-            f.write(raw_q_seq[i] + ', ' + ' '.join(out) + '\n')
-    
-    
+        # write to file
+        res.append(raw_q_seq[i].replace('\n', '') + ', ' + ' '.join(out) + '\n')
+
+    res.append('\n\n')
+    res= ''.join(res)
+    return res
+
 
 def epoch_reinforce_train(model, optimizer, batch_size, sql_data, table_data, db_path):
     engine = DBEngine(db_path)

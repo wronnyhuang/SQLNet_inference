@@ -61,14 +61,12 @@ class SQLNet(nn.Module):
 
     def generate_gt_where_seq(self, q, col, query):
         ret_seq = []
-        for cur_q, cur_col, cur_query in zip(q, col, query):
+        for queryid, (cur_q, cur_col, cur_query) in enumerate(zip(q, col, query)):
             cur_values = []
-            st = cur_query.index(u'WHERE')+1 if \
-                    u'WHERE' in cur_query else len(cur_query)
+            st = cur_query.index(u'WHERE')+1 if u'WHERE' in cur_query else len(cur_query)
             all_toks = ['<BEG>'] + cur_q + ['<END>']
             while st < len(cur_query):
-                ed = len(cur_query) if 'AND' not in cur_query[st:]\
-                        else cur_query[st:].index('AND') + st
+                ed = len(cur_query) if 'AND' not in cur_query[st:] else cur_query[st:].index('AND') + st
                 if 'EQL' in cur_query[st:ed]:
                     op = cur_query[st:ed].index('EQL') + st
                 elif 'GT' in cur_query[st:ed]:
