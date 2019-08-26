@@ -108,6 +108,7 @@ if __name__ == '__main__':
             if args.train_emb:
                 torch.save(model.agg_embed_layer.state_dict(), agg_e)
         if TRAIN_SEL:
+            
             torch.save(model.sel_pred.state_dict(), sel_m)
             if args.train_emb:
                 torch.save(model.sel_embed_layer.state_dict(), sel_e)
