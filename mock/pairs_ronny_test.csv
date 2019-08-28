@@ -1,0 +1,36 @@
+SELECT account_number FROM mock_time_machine WHERE days_account_open LT 120,what are the account numbers with open account days below 120 days?
+SELECT account_number FROM mock_time_machine WHERE days_account_open GT 175 AND segment EQL high-active,what are the accounts with open account days over 175 and are in the high-active segment?
+SELECT account_number FROM mock_time_machine WHERE age GT 34 AND age LT 76,what are the account numbers of users between the age of 34 and 76?
+SELECT account_number FROM mock_time_machine WHERE annual_income GT 67000 AND annual_income LT 123000,what user accounts have annual income between 67000 and 123000?
+SELECT account_number FROM mock_time_machine WHERE food_spending GT 85,what are the account numbers for which spending on food is over 85?
+SELECT account_number FROM mock_time_machine WHERE accommodation_spending LT 246,give me the accounts where spending on accommodation is less than 246
+SELECT account_number FROM mock_time_machine WHERE gasoline_spending GT 43,which accounts have spending on gasoline greater than 43?
+SELECT account_number FROM mock_time_machine WHERE information_technology_spending GT 7 AND segment EQL seasonal,which accounts are in the seasonal segment and have info tech spending bigger than 7?
+SELECT account_number FROM mock_time_machine WHERE information_technology_spending GT 79,what accounts spend over 79 on information tech?
+SELECT account_number FROM mock_time_machine WHERE segment EQL low AND annual_income GT 160000 AND annual_income LT 340000,what accounts have an annual income between 160000 and 340000 and are in the low segment?
+SELECT account_number FROM mock_time_machine WHERE segment EQL high-active AND annual_income GT 60000 AND age LT 30,"which users are in the high-active sector, have an income greater than 60000 and are below 30 in age?"
+SELECT account_number FROM mock_time_machine WHERE gender EQL female AND age GT 45,select the accounts whose gender is female and are older than 45
+SELECT account_number FROM mock_time_machine WHERE gender EQL male AND accommodation_spending GT 34,what are the numbers of the accounts corresponding to the male sex and accommodation spending over 34?
+SELECT account_number FROM mock_time_machine WHERE segment EQL seasonal,show account numbers who are in the seasonal segment
+SELECT account_number FROM mock_time_machine WHERE segment EQL low AND food_spending GT 120,which account numbers are in the low sector and spend over 120 in food
+SELECT account_number FROM mock_time_machine WHERE segment EQL seasonal AND annual_income GT 30000 AND annual_income LT 89000,tell me the accounts which are in the seasonal category and make an income over 30000 but no greater than 89000
+SELECT account_number FROM mock_time_machine WHERE accommodation_spending GT 166,give me all accounts with accommodation spending over 166
+SELECT account_number FROM mock_time_machine WHERE food_spending LT 97,which accounts spend less than 97 on food?
+SELECT account_number FROM mock_time_machine WHERE information_technology_spending LT 26,give me the account numbers where information technology spending is less than 92
+SELECT account_number FROM mock_time_machine WHERE gasoline_spending GT 92,which accounts spend over 92 on gasoline?
+SELECT account_number FROM mock_time_machine WHERE information_technology_spending GT 9 AND utilities_spending GT 62,what accounts spend over 9 on information technology and over 62 on utilities
+SELECT account_number FROM mock_time_machine WHERE air_transportation_spending GT 47 AND gasoline_spending GT 54,which accounts have air transportation spending over 47 and gasoline spending over 54
+SELECT account_number FROM mock_time_machine WHERE utilities_spending GT 9 AND utilities_spending LT 62,give me accounts with utilities spending between 9 and 62
+SELECT account_number FROM mock_time_machine WHERE segment EQL high-active,give me accounts with a segment of high-active
+SELECT account_number FROM mock_time_machine WHERE food_spending GT 10 AND utilities_spending GT 39,show me the accounts with food spending over 10 and utilities spending over 39
+SELECT account_number FROM mock_time_machine WHERE accommodation_spending GT 60 AND food_spending GT 50,tell me the account numbers with accommodation spending over 60 and food spending over 50
+SELECT account_number FROM mock_time_machine WHERE information_technology_spending GT 5 AND annual_income GT 80000,what are the user account numbers with information technology spending over 5 and annual income over 80000?
+SELECT account_number FROM mock_time_machine WHERE air_transportation_spending GT 5 AND annual_income GT 195000,present me the account numbers with air transportation spending over 5 and annual income less than 195000
+SELECT account_number FROM mock_time_machine WHERE segment EQL low AND gender EQL male,show account numbers of users who are in low segment and are in the male gender
+SELECT account_number FROM mock_time_machine WHERE segment EQL high-active AND gender EQL female,show account numbers of users in the high-active segment and are in the female gender
+SELECT account_number FROM mock_time_machine WHERE days_account_open GT 150 AND segment EQL seasonal AND annual_income LT 45000,"which accounts have been opened more than 150 days, are in the seasonal segment, and have an income less than 45000?"
+SELECT account_number FROM mock_time_machine WHERE age GT 58 AND age LT 80,present the account numbers who are between the age of 58 and 80
+SELECT account_number FROM mock_time_machine WHERE days_account_open LT 365,what are the accounts that have been opened for less than 365 days?
+SELECT account_number FROM mock_time_machine WHERE days_account_open LT 160 AND annual_income GT 190000,show me the accounts that have been opened for less than 160 days and have an annual income of over 190000
+SELECT account_number FROM mock_time_machine WHERE annual_income GT 200000 AND age LT 50,what accounts make over 200000 in income and are under age 50?
+SELECT account_number FROM mock_time_machine WHERE days_account_open GT 50 AND accommodation_spending LT 120,which accounts are over 50 days of being opened and have an accommodation spending of less than 120?

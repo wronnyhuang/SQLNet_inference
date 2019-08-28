@@ -101,6 +101,7 @@ if __name__ == '__main__':
         print "Loading from %s"%cond_lm
         model.cond_pred.load_state_dict(torch.load(cond_lm))
 
+
     ## run inference
     print_table(dummy_table_data, 'mock_time_machine')
     for _ in range(10):
