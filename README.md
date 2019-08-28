@@ -1,31 +1,18 @@
-# SQLNet with inference
+# SQLNet with custom inference
 
-First install the same dependencies as the original SQLNet. Then run
+This repo provides an implementation of the SQLNet neural network for predicting SQL queries on [WikiSQL dataset](https://github.com/salesforce/WikiSQL) and on your own custom dataset. The original paper on SQLNet is available at [here](https://arxiv.org/abs/1711.04436).
 
-`python infer.py --ca`
+## Custom inference
 
-This will allow you to run your own custom inference (English) statements on the existing SQL tables. It will then return the predicted SQL query and the execution result.
+For a live demo with your own typed custom questions, you must first run the installation and training as outlined below.
 
----
+To perform transfer learning, first train the SQLNet weights on the large WikiSQL dataset (details below) and save those weights into the folder `saved_model_pretrained_wikisql/`. Then uncomment the lines in `train_mc.py` which load the pretrained weights from that saved model and also uncomment the lines which commence finetuning.
 
-# SQLNet original documentation
+After transfer learning is finished and the weights are saved into `saved_model/`, run the following command to do custom inference.
 
-This repo provides an implementation of SQLNet and Seq2SQL neural networks for predicting SQL queries on [WikiSQL dataset](https://github.com/salesforce/WikiSQL). The paper is available at [here](https://arxiv.org/abs/1711.04436).
+`python infer_mc.py --ca`
 
-## Citation
-
-> Xiaojun Xu, Chang Liu, Dawn Song. 2017. SQLNet: Generating Structured Queries from Natural Language Without Reinforcement Learning.
-
-## Bibtex
-
-```
-@article{xu2017sqlnet,
-  title={SQLNet: Generating Structured Queries From Natural Language Without Reinforcement Learning},
-  author={Xu, Xiaojun and Liu, Chang and Song, Dawn},
-  journal={arXiv preprint arXiv:1711.04436},
-  year={2017}
-}
-```
+This will allow you to run your own custom inference (English) statements on your own SQL table. It will then return the predicted SQL query.
 
 ## Installation
 The data is in `data.tar.bz2`. Unzip the code by running
@@ -33,7 +20,13 @@ The data is in `data.tar.bz2`. Unzip the code by running
 tar -xjvf data.tar.bz2
 ```
 
-The code is written using PyTorch in Python 2.7. Check [here](http://pytorch.org/) to install PyTorch. You can install other dependency by running 
+The code is written using PyTorch 0.2.0 in Python 2.7. Check [here](http://pytorch.org/) to install PyTorch, or run
+
+```bash
+conda install pytorch=0.2.0 cuda90 -c pytorch
+```
+
+You can install other dependency by running 
 ```bash
 pip install -r requirements.txt
 ```
@@ -62,6 +55,12 @@ Train a SQLNet model with column attention:
 ```bash
 python train.py --ca
 ```
+
+Specify a gpu with
+```bash
+python train.py --ca --gpu=0
+```
+
 
 Train a SQLNet model with column attention and trainable embedding (requires pretraining without training embedding, i.e., executing the command above):
 ```bash
@@ -99,5 +98,20 @@ python test.py --baseline --dataset 1
 Test a trained Seq2SQL model with Reinforcement learning
 ```bash
 python test.py --baseline --dataset 1 --rl
+```
+
+## Citation
+
+> Xiaojun Xu, Chang Liu, Dawn Song. 2017. SQLNet: Generating Structured Queries from Natural Language Without Reinforcement Learning.
+
+## Bibtex
+
+```
+@article{xu2017sqlnet,
+  title={SQLNet: Generating Structured Queries From Natural Language Without Reinforcement Learning},
+  author={Xu, Xiaojun and Liu, Chang and Song, Dawn},
+  journal={arXiv preprint arXiv:1711.04436},
+  year={2017}
+}
 ```
 
