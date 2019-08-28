@@ -145,6 +145,7 @@ def epoch_train(model, optimizer, batch_size, sql_data, table_data, pred_entry):
     st = 0
     while st < len(sql_data):
         ed = st+batch_size if st+batch_size < len(perm) else len(perm)
+        print('batch:', st, 'to', ed, 'of', len(sql_data))
 
         q_seq, col_seq, col_num, ans_seq, query_seq, gt_cond_seq = to_batch_seq(sql_data, table_data, perm, st, ed)
         gt_where_seq = model.generate_gt_where_seq(q_seq, col_seq, query_seq)

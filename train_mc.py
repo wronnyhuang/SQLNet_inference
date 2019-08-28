@@ -92,25 +92,24 @@ if __name__ == '__main__':
     ## transfer learning via finetuning weights from precedent task https://machinelearningmastery.com/transfer-learning-for-deep-learning/
     
     # load pretrained
-    agg_m, sel_m, cond_m = best_model_name(args, savedstr='pretrain_wikisql')
-    for d in [agg_m, sel_m, cond_m]:
-        os.makedirs(d, exist_ok=True)
-    print('==> best model names:', agg_m, sel_m, cond_m)
-    print "Loading from %s"%agg_m
-    model.agg_pred.load_state_dict(torch.load(agg_m))
-    print "Loading from %s"%sel_m
-    model.sel_pred.load_state_dict(torch.load(sel_m))
-    print "Loading from %s"%cond_m
-    model.cond_pred.load_state_dict(torch.load(cond_m))
-    if args.rl or args.train_emb:
-        print('train_emb is on, so loading best_model')
-        agg_lm, sel_lm, cond_lm = best_model_name(args, for_load=True)
-        print "Loading from %s"%agg_lm
-        model.agg_pred.load_state_dict(torch.load(agg_lm))
-        print "Loading from %s"%sel_lm
-        model.sel_pred.load_state_dict(torch.load(sel_lm))
-        print "Loading from %s"%cond_lm
-        model.cond_pred.load_state_dict(torch.load(cond_lm))
+    savedstr = '_pretrain_wikisql'
+    agg_m, sel_m, cond_m = best_model_name(args, savedstr=savedstr)
+    # print('==> best model names:', agg_m, sel_m, cond_m)
+    # print "Loading from %s"%agg_m
+    # model.agg_pred.load_state_dict(torch.load(agg_m))
+    # print "Loading from %s"%sel_m
+    # model.sel_pred.load_state_dict(torch.load(sel_m))
+    # print "Loading from %s"%cond_m
+    # model.cond_pred.load_state_dict(torch.load(cond_m))
+    # if args.rl or args.train_emb:
+    #     print('train_emb is on, so loading best_model')
+    #     agg_lm, sel_lm, cond_lm = best_model_name(args, for_load=True)
+    #     print "Loading from %s"%agg_lm
+    #     model.agg_pred.load_state_dict(torch.load(agg_lm))
+    #     print "Loading from %s"%sel_lm
+    #     model.sel_pred.load_state_dict(torch.load(sel_lm))
+    #     print "Loading from %s"%cond_lm
+    #     model.cond_pred.load_state_dict(torch.load(cond_lm))
 
     ## begin training
     for i in range(100):

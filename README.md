@@ -3,7 +3,7 @@
 
 This repo provides an implementation of the SQLNet neural network for predicting SQL queries on [WikiSQL dataset](https://github.com/salesforce/WikiSQL) and on your own custom dataset. The original paper on SQLNet is available at [here](https://arxiv.org/abs/1711.04436).
 
-## Custom inference
+## Custom inference demo
 
 For a live demo with your own typed custom questions, you must first run the installation and training as outlined below.
 
