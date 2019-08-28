@@ -59,12 +59,12 @@ class DBEngine:
         schema_re = re.compile(r'\((.+)\)')
         if not table_id.startswith('table'):
             table_id = 'table_{}'.format(table_id.replace('-', '_'))
-        table_info = self.db.query('SELECT sql from sqlite_master WHERE tbl_name = :name', name=table_id).all()[0].sql.replace('\n','')
-        schema_str = schema_re.findall(table_info)[0]
-        schema = {}
-        for tup in schema_str.split(', '):
-            c, t = tup.split()
-            schema[c] = t
+        # table_info = self.db.query('SELECT sql from sqlite_master WHERE tbl_name = :name', name=table_id).all()[0].sql.replace('\n','')
+        # schema_str = schema_re.findall(table_info)[0]
+        # schema = {}
+        # for tup in schema_str.split(', '):
+        #     c, t = tup.split()
+        #     schema[c] = t
         col_names = table_data[tid]['header_tok'] # extract column names
         select = ' '.join(col_names[select_index])
         agg = agg_ops[aggregation_index]
@@ -76,11 +76,11 @@ class DBEngine:
         for col_index, op, val in conditions:
             if lower and (isinstance(val, str) or isinstance(val, unicode)):
                 val = val.lower()
-            if schema['col{}'.format(col_index)] == 'real' and not isinstance(val, (int, float)):
-                try:
-                    val = float(parse_decimal(val))
-                except NumberFormatError as e:
-                    val = float(num_re.findall(val)[0])
+            # if table_data[tid]['types'][col_index] == 'real' and not isinstance(val, (int, float)):
+            #     try:
+            #         val = float(parse_decimal(val))
+            #     except NumberFormatError as e:
+            #         val = float(num_re.findall(val)[0])
             where_clause.append('col{} {} :col{}'.format(col_index, cond_ops[op], col_index))
             where_clause_raw.append('{} {} {}'.format(' '.join(col_names[col_index]), cond_ops[op], val))
             where_map['col{}'.format(col_index)] = val

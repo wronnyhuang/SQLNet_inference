@@ -66,14 +66,14 @@ def load_dataset(dataset_id, use_small=False):
             test_sql_data, test_table_data, TRAIN_DB, DEV_DB, TEST_DB
 
 
-def load_dataset_dummy(dataset_id, use_small=False):
+def load_dataset_dummy(dataset_id, use_small=False, teststr=''):
     if dataset_id == 0:
         print "Loading from original dataset"
-        dummy_sql_data, dummy_table_data = load_data('data/dummy_tok.jsonl', 'data/dummy_tok.tables.jsonl', use_small=use_small)
+        dummy_sql_data, dummy_table_data = load_data('data/dummy_tok{}.jsonl'.format(teststr), 'data/dummy_tok.tables.jsonl', use_small=use_small)
     return dummy_sql_data, dummy_table_data
 
 
-def best_model_name(args, for_load=False):
+def best_model_name(args, for_load=False, savedstr=''):
     new_data = 'new' if args.dataset > 0 else 'old'
     mode = 'seq2sql' if args.baseline else 'sqlnet'
     if for_load:
@@ -83,23 +83,22 @@ def best_model_name(args, for_load=False):
         use_rl = 'rl_' if args.rl else ''
     use_ca = '_ca' if args.ca else ''
 
-    agg_model_name = 'saved_model/%s_%s%s%s.agg_model'%(new_data,
+    agg_model_name = 'saved_model{}/%s_%s%s%s.agg_model'.format(savedstr)%(new_data,
             mode, use_emb, use_ca)
-    sel_model_name = 'saved_model/%s_%s%s%s.sel_model'%(new_data,
+    sel_model_name = 'saved_model{}/%s_%s%s%s.sel_model'.format(savedstr)%(new_data,
             mode, use_emb, use_ca)
-    cond_model_name = 'saved_model/%s_%s%s%s.cond_%smodel'%(new_data,
+    cond_model_name = 'saved_model{}/%s_%s%s%s.cond_%smodel'.format(savedstr)%(new_data,
             mode, use_emb, use_ca, use_rl)
 
     if not for_load and args.train_emb:
-        agg_embed_name = 'saved_model/%s_%s%s%s.agg_embed'%(new_data,
+        agg_embed_name = 'saved_model{}/%s_%s%s%s.agg_embed'.format(savedstr)%(new_data,
                 mode, use_emb, use_ca)
-        sel_embed_name = 'saved_model/%s_%s%s%s.sel_embed'%(new_data,
+        sel_embed_name = 'saved_model{}/%s_%s%s%s.sel_embed'.format(savedstr)%(new_data,
                 mode, use_emb, use_ca)
-        cond_embed_name = 'saved_model/%s_%s%s%s.cond_embed'%(new_data,
+        cond_embed_name = 'saved_model{}/%s_%s%s%s.cond_embed'.format(savedstr)%(new_data,
                 mode, use_emb, use_ca)
 
-        return agg_model_name, sel_model_name, cond_model_name,\
-                agg_embed_name, sel_embed_name, cond_embed_name
+        return agg_model_name, sel_model_name, cond_model_name, agg_embed_name, sel_embed_name, cond_embed_name
     else:
         return agg_model_name, sel_model_name, cond_model_name
 
@@ -220,17 +219,17 @@ def infer_exec(model, batch_size, sql_data, table_data, db_path):
         for idx, (sql_gt, sql_pred, tid) in enumerate(zip(query_gt, pred_queries, table_ids)):
             print_table(table_data, tid)
             raw_query = engine.get_query_raw(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'], table_data)
-            ret_gt = engine.execute(tid, sql_gt['sel'], sql_gt['agg'], sql_gt['conds'])
-            try:
-                ret_pred = engine.execute(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'])
-            except:
-                ret_pred = None
-            isCorrect = (ret_gt == ret_pred)
+            # ret_gt = engine.execute(tid, sql_gt['sel'], sql_gt['agg'], sql_gt['conds'])
+            # try:
+            #     ret_pred = engine.execute(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'])
+            # except:
+            #     ret_pred = None
+            # isCorrect = (ret_gt == ret_pred)
             print "==> Here's an example"
             print 'English: ', raw_q_seq[0]
             print 'SQL: ', raw_query
-            print 'Execution: ', str(ret_pred[0]).encode('utf-8') if ret_pred else 'null'
-            print 'Correct: ', isCorrect
+            # print 'Execution: ', str(ret_pred[0]).encode('utf-8') if ret_pred else 'null'
+            # print 'Correct: ', isCorrect
             print '\n'
             break
 
@@ -244,13 +243,13 @@ def infer_exec(model, batch_size, sql_data, table_data, db_path):
         pred_queries = model.gen_query(score, q_seq, col_seq, raw_q_seq, raw_col_seq, (True, True, True))
         for idx, (sql_pred, tid) in enumerate(zip(pred_queries, table_ids)):
             raw_query = engine.get_query_raw(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'], table_data, lower=True)
-            try:
-                ret_pred = engine.execute(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'])
-            except:
-                ret_pred = '<Failed>'
+            # try:
+            #     ret_pred = engine.execute(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'])
+            # except:
+            #     ret_pred = '<Failed>'
             print 'ENGLISH: ', raw_q_seq[0]
             print 'SQL: ', raw_query
-            print 'Execution: ', str(ret_pred[0]).encode('utf-8') if ret_pred else 'null'
+            # print 'Execution: ', str(ret_pred[0]).encode('utf-8') if ret_pred else 'null'
             print '\n\n'
             break
         st += 1
@@ -264,17 +263,17 @@ def print_table(table_data, tid):
     print 'TABLE', tid
     print table['page_title']
     print table['section_title']
-    print '\t'.join(table['header']).expandtabs(22)
+    print '\t'.join(table['header']).expandtabs(35)
     for row in table['rows']:
-        print '\t'.join(row).expandtabs(22)
+        print '\t'.join(row).expandtabs(35)
     print '\n'
 
 # RONNY ADDED
 def input_tokenize_wrapper():
-    raw_q = input('Question: ')
+    raw_q = input('English: ')
     with open('input_question.txt', 'w') as f:
         f.write(raw_q)
-    process = Popen('python3 input_tokenize_py3.py ', shell=True, stdout=PIPE, stderr=PIPE)
+    process = Popen('/opt/conda/bin/python input_tokenize_py3.py ', shell=True, stdout=PIPE, stderr=PIPE)
     process.wait()
     output, err = process.communicate()
     return raw_q, eval(output)
@@ -285,6 +284,7 @@ def epoch_acc(model, batch_size, sql_data, table_data, pred_entry, write=False, 
     st = 0
     one_acc_num = 0.0
     tot_acc_num = 0.0
+    f = open('saved_model/mc.results', 'w')
     while st < len(sql_data):
         ed = st+batch_size if st+batch_size < len(perm) else len(perm)
 
@@ -293,29 +293,41 @@ def epoch_acc(model, batch_size, sql_data, table_data, pred_entry, write=False, 
         raw_col_seq = [x[1] for x in raw_data]
         query_gt, table_ids = to_batch_query(sql_data, perm, st, ed)
         gt_sel_seq = [x[1] for x in ans_seq]
-        score = model.forward(q_seq, col_seq, col_num,
-                pred_entry, gt_sel = gt_sel_seq)
-        pred_queries = model.gen_query(score, q_seq, col_seq,
-                raw_q_seq, raw_col_seq, pred_entry)
-        one_err, tot_err = model.check_acc(raw_data,
-                pred_queries, query_gt, pred_entry)
-
-        formatted = format_preds(raw_q_seq, raw_col_seq, pred_queries)
-        if write:
-            with open('mc.results', 'w') as f:
-                f.write(formatted)
+        score = model.forward(q_seq, col_seq, col_num, pred_entry, gt_sel = gt_sel_seq)
+        pred_queries = model.gen_query(score, q_seq, col_seq, raw_q_seq, raw_col_seq, pred_entry)
+        one_err, tot_err = model.check_acc(raw_data, pred_queries, query_gt, pred_entry)
         
-        if not epoch % 10:
+        formatted = format_preds(raw_q_seq, raw_col_seq, pred_queries)
+        if epoch is not None and not epoch % 10:
             for line in formatted.split('\n'):
                 print(line)
-            
-
+                if bool(write):
+                    f.write(line + '\n')
+                    
         one_acc_num += (ed-st-one_err)
         tot_acc_num += (ed-st-tot_err)
-
         st = ed
+        
+    # if experiment is not None:
+    #     experiment.set_step(epoch)
+    #     experiment.log_asset(f, file_name='mc_results-' + write)
+    f.close()
     return tot_acc_num / len(sql_data), one_acc_num / len(sql_data)
 
+def make_pred(model, sql_data, table_data, pred_entry=[True, True, True]):
+    model.eval()
+    perm = list(range(len(sql_data)))
+    q_seq, col_seq, col_num, ans_seq, query_seq, gt_cond_seq, raw_data = to_batch_seq(sql_data, table_data, perm, 0, 2, ret_vis_data=True)
+    raw_q_seq = [x[0] for x in raw_data]
+    raw_col_seq = [x[1] for x in raw_data]
+    query_gt, table_ids = to_batch_query(sql_data, perm, 0, 2)
+    gt_sel_seq = [x[1] for x in ans_seq]
+    score = model.forward(q_seq, col_seq, col_num, pred_entry, gt_sel = gt_sel_seq)
+    pred_queries = model.gen_query(score, q_seq, col_seq, raw_q_seq, raw_col_seq, pred_entry)
+    
+    formatted = format_preds(raw_q_seq, raw_col_seq, pred_queries)
+    return formatted
+    
 # RONNY ADDED
 def format_preds(raw_q_seq, raw_col_seq, pred_queries):
     

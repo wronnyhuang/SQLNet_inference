@@ -39,10 +39,10 @@ if __name__ == '__main__':
         BATCH_SIZE=64
     TEST_ENTRY=(True, True, True)  # (AGG, SEL, COND)
 
-    sql_data, table_data, val_sql_data, val_table_data, \
-            test_sql_data, test_table_data, \
-            TRAIN_DB, DEV_DB, TEST_DB = load_dataset(
-                    args.dataset, use_small=USE_SMALL)
+    sql_data, table_data, val_sql_data, val_table_data, test_sql_data, test_table_data, TRAIN_DB, DEV_DB, TEST_DB = load_dataset(args.dataset, use_small=USE_SMALL)
+    examples, tables = load_dataset_dummy(0)
+    examples.extend(sql_data)
+    tables.update(table_data)
 
     word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), \
         load_used=True, use_small=USE_SMALL) # load_used can speed up loading
@@ -54,7 +54,8 @@ if __name__ == '__main__':
                 trainable_emb = True)
 
     if args.train_emb:
-        agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args)
+        agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args, savedstr='_mconly')
+        print('==> best model names:', agg_m, sel_m, cond_m)
         print "Loading from %s"%agg_m
         model.agg_pred.load_state_dict(torch.load(agg_m))
         print "Loading from %s"%sel_m
@@ -68,7 +69,8 @@ if __name__ == '__main__':
         print "Loading from %s"%cond_e
         model.cond_embed_layer.load_state_dict(torch.load(cond_e))
     else:
-        agg_m, sel_m, cond_m = best_model_name(args)
+        agg_m, sel_m, cond_m = best_model_name(args, savedstr='_mconly')
+        agg_m, sel_m, cond_m = best_model_name(args, savedstr='')
         print "Loading from %s"%agg_m
         model.agg_pred.load_state_dict(torch.load(agg_m))
         print "Loading from %s"%sel_m
@@ -76,4 +78,4 @@ if __name__ == '__main__':
         print "Loading from %s"%cond_m
         model.cond_pred.load_state_dict(torch.load(cond_m))
     
-    val_exec_acc = infer_exec(model, 2, val_sql_data, val_table_data, DEV_DB)
+    val_exec_acc = infer_exec(model, 2, examples, tables, DEV_DB)

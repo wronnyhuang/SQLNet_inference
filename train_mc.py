@@ -9,6 +9,7 @@ from sqlnet.model.seq2sql import Seq2SQL
 from sqlnet.model.sqlnet import SQLNet
 import numpy as np
 import datetime
+import copy
 
 import argparse
 import os
@@ -49,40 +50,60 @@ if __name__ == '__main__':
     TRAIN_AGG, TRAIN_SEL, TRAIN_COND = TRAIN_ENTRY
     learning_rate = 1e-4 if args.rl else 1e-3
 
-    sql_data, table_data, val_sql_data, val_table_data, \
-            test_sql_data, test_table_data, \
-            TRAIN_DB, DEV_DB, TEST_DB = load_dataset(
-                    args.dataset, use_small=USE_SMALL)
+    # load wikisql
+    sql_data, table_data, val_sql_data, val_table_data, test_sql_data, test_table_data, TRAIN_DB, DEV_DB, TEST_DB = load_dataset(args.dataset, use_small=USE_SMALL)
     
     # concartenate mastercard dummy dataset with wikisql
     dummy_sql_data, dummy_table_data = load_dataset_dummy(0)
-    sql_data.append(dummy_sql_data[0])
+    [sql_data.extend(dummy_sql_data) for _ in range(100)]
     table_data.update(dummy_table_data)
     
-    # optinoal: train only on dummy
-    sql_data = dummy_sql_data
-    table_data = dummy_table_data
+    # # optinoal: train only on dummy
+    # sql_data = dummy_sql_data
+    # table_data = dummy_table_data
+    
+    # train on mc data
+    dum_sql_data = dummy_sql_data
+    dum_table_data = dummy_table_data
+    
+    # test model on mc validation data
+    dummy_sql_data, dummy_table_data = load_dataset_dummy(0, teststr='_test')
+    val_sql_data = dummy_sql_data
+    val_table_data = dummy_table_data
 
+    # load word embedding
     tic = time()
-    word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), \
-            load_used=args.train_emb, use_small=USE_SMALL)
-    print('time to load word emb: ', time() - tic)
+    print '==> loading word embedding'
+    word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), load_used=args.train_emb, use_small=USE_SMALL)
+    print 'time to load word emb: ' + str(time() - tic)
 
+    # build sqlnet model
     if not args.baseline:
-        model = SQLNet(word_emb, N_word=N_word, use_ca=args.ca,
-                gpu=GPU, trainable_emb = args.train_emb)
-        print 'done with sqlnet constructor'
+        tic = time()
+        print '==> loading sqlnet constructor'
+        model = SQLNet(word_emb, N_word=N_word, use_ca=args.ca, gpu=GPU, trainable_emb = args.train_emb)
+        print 'time to load sqlnet constructor: ' + str(time() - tic)
         assert not args.rl, "SQLNet can\'t do reinforcement learning."
-        
-    optimizer = torch.optim.Adam(model.parameters(),
-            lr=learning_rate, weight_decay = 0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay = 0)
 
     if args.train_emb:
         agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args)
-    else:
-        agg_m, sel_m, cond_m = best_model_name(args)
 
-    if args.rl or args.train_emb: # Load pretrained model.
+    ## transfer learning via finetuning weights from precedent task https://machinelearningmastery.com/transfer-learning-for-deep-learning/
+    
+    # load pretrained
+    agg_m, sel_m, cond_m = best_model_name(args, savedstr='pretrain_wikisql')
+    for d in [agg_m, sel_m, cond_m]:
+        os.makedirs(d, exist_ok=True)
+    print('==> best model names:', agg_m, sel_m, cond_m)
+    print "Loading from %s"%agg_m
+    model.agg_pred.load_state_dict(torch.load(agg_m))
+    print "Loading from %s"%sel_m
+    model.sel_pred.load_state_dict(torch.load(sel_m))
+    print "Loading from %s"%cond_m
+    model.cond_pred.load_state_dict(torch.load(cond_m))
+    if args.rl or args.train_emb:
+        print('train_emb is on, so loading best_model')
         agg_lm, sel_lm, cond_lm = best_model_name(args, for_load=True)
         print "Loading from %s"%agg_lm
         model.agg_pred.load_state_dict(torch.load(agg_lm))
@@ -91,87 +112,32 @@ if __name__ == '__main__':
         print "Loading from %s"%cond_lm
         model.cond_pred.load_state_dict(torch.load(cond_lm))
 
-    if not args.rl:
-        # print 'init'
-        # init_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
-        # best_agg_acc = init_acc[1][0]
-        # best_agg_idx = 0
-        # best_sel_acc = init_acc[1][1]
-        # best_sel_idx = 0
-        # best_cond_acc = init_acc[1][2]
-        # best_cond_idx = 0
-        # print 'Init dev acc_qm: %s\n  breakdown on (agg, sel, where): %s'%\
-        #         init_acc
+    ## begin training
+    for i in range(100):
+        print 'Epoch %d'%(i+1)
         
-        if TRAIN_AGG:
-            torch.save(model.agg_pred.state_dict(), agg_m)
-            if args.train_emb:
-                torch.save(model.agg_embed_layer.state_dict(), agg_e)
-        if TRAIN_SEL:
-            
-            torch.save(model.sel_pred.state_dict(), sel_m)
-            if args.train_emb:
-                torch.save(model.sel_embed_layer.state_dict(), sel_e)
-        if TRAIN_COND:
-            torch.save(model.cond_pred.state_dict(), cond_m)
-            if args.train_emb:
-                torch.save(model.cond_embed_layer.state_dict(), cond_e)
-                
-        for i in range(5000):
-            
-            print 'Epoch %d @ %s'%(i+1, datetime.datetime.now())
-            
-            loss_epoch = epoch_train(model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY)
-            print ' Loss = %s'%loss_epoch
-            
+        # precedent task
+        loss_epoch = epoch_train(model, optimizer, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY)
+        # finetuned task
+        # loss_epoch = epoch_train(model, optimizer, BATCH_SIZE, dum_sql_data, dum_table_data, TRAIN_ENTRY)
+        print ' Loss = %s'%loss_epoch
+        experiment.log_metric('loss', loss_epoch, step=i)
+        
+        if not i % 5:
             train_acc_qm = epoch_acc(model, BATCH_SIZE, sql_data, table_data, TRAIN_ENTRY, epoch=i)
             print ' Train acc_qm: %s\n   breakdown result: %s'%train_acc_qm
-            
-            #val_acc = epoch_token_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
-            # val_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY)
-            # print ' Dev acc_qm: %s\n   breakdown result: %s'%val_acc
-            
-            # comet logging
-            experiment.log_metric('loss', loss_epoch, step=i)
             experiment.log_metric('train_acc_qm', train_acc_qm[0], step=i)
-            # experiment.log_metric('val_acc', val_acc[0], step=i)
-            
-            # if TRAIN_AGG:
-            #     if val_acc[1][0] > best_agg_acc:
-            #         best_agg_acc = val_acc[1][0]
-            #         best_agg_idx = i+1
-            #         torch.save(model.agg_pred.state_dict(),
-            #             'saved_model/epoch%d.agg_model%s'%(i+1, args.suffix))
-            #         torch.save(model.agg_pred.state_dict(), agg_m)
-            #         if args.train_emb:
-            #             torch.save(model.agg_embed_layer.state_dict(),
-            #             'saved_model/epoch%d.agg_embed%s'%(i+1, args.suffix))
-            #             torch.save(model.agg_embed_layer.state_dict(), agg_e)
-            # if TRAIN_SEL:
-            #     if val_acc[1][1] > best_sel_acc:
-            #         best_sel_acc = val_acc[1][1]
-            #         best_sel_idx = i+1
-            #         torch.save(model.sel_pred.state_dict(),
-            #             'saved_model/epoch%d.sel_model%s'%(i+1, args.suffix))
-            #         torch.save(model.sel_pred.state_dict(), sel_m)
-            #         if args.train_emb:
-            #             torch.save(model.sel_embed_layer.state_dict(),
-            #             'saved_model/epoch%d.sel_embed%s'%(i+1, args.suffix))
-            #             torch.save(model.sel_embed_layer.state_dict(), sel_e)
-            # if TRAIN_COND:
-            #     if val_acc[1][2] > best_cond_acc:
-            #         best_cond_acc = val_acc[1][2]
-            #         best_cond_idx = i+1
-            #         torch.save(model.cond_pred.state_dict(),
-            #             'saved_model/epoch%d.cond_model%s'%(i+1, args.suffix))
-            #         torch.save(model.cond_pred.state_dict(), cond_m)
-            #         if args.train_emb:
-            #             torch.save(model.cond_embed_layer.state_dict(),
-            #             'saved_model/epoch%d.cond_embed%s'%(i+1, args.suffix))
-            #             torch.save(model.cond_embed_layer.state_dict(), cond_e)
-            #
-            # print ' Best val acc = %s, on epoch %s individually'%(
-            #         (best_agg_acc, best_sel_acc, best_cond_acc),
-            #         (best_agg_idx, best_sel_idx, best_cond_idx))
-            
-        experiment.log_asset_folder('saved_model')
+        print('==> mc train')
+        dum_acc = epoch_acc(model, BATCH_SIZE, dum_sql_data, dum_table_data, TRAIN_ENTRY, write='dummy', experiment=experiment, epoch=i)
+        print ' Dum acc_qm: %s\n   breakdown result: %s'%dum_acc
+        experiment.log_metric('dummy_acc_qm', dum_acc[0], step=i)
+
+        print('==> mc valid')
+        val_acc = epoch_acc(model, BATCH_SIZE, val_sql_data, val_table_data, TRAIN_ENTRY, write='valid', experiment=experiment, epoch=i)
+        print ' Dev acc_qm: %s\n   breakdown result: %s'%val_acc
+        experiment.log_metric('valid_acc_qm', val_acc[0], step=i)
+        
+        # agg_m, sel_m, cond_m = best_model_name(args, savedstr='')
+        torch.save(model.agg_pred.state_dict(), agg_m)
+        torch.save(model.sel_pred.state_dict(), sel_m)
+        torch.save(model.cond_pred.state_dict(), cond_m)

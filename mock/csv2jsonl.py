@@ -4,6 +4,8 @@ from os.path import join, basename
 from nltk.tokenize.stanford import StanfordTokenizer
 from time import time
 
+teststr = '_test'
+
 home = os.environ['HOME']
 os.environ['CLASSPATH'] = join(home,'datasets/stanford-postagger-2018-10-16/')
 
@@ -127,7 +129,7 @@ if __name__ == '__main__':
     
     stanford = StanfordTokenizer()
     
-    with open('pairs_ronny.csv', 'r+') as f:
+    with open('pairs_ronny{}.csv'.format(teststr), 'r+') as f:
         lines_pairs = f.readlines()[1:]
     with open('table_ronny.csv', 'r') as f:
         lines_table = f.readlines()
@@ -138,7 +140,7 @@ if __name__ == '__main__':
         json.dump(entry_table, f)
     
     # parse all pairs
-    f = open('dummy_tok.jsonl', 'w+')
+    f = open('dummy_tok{}.jsonl'.format(teststr), 'w+')
     for line in lines_pairs:
         entry = dict(phase=2)
         # line.replace('"', '')
@@ -156,4 +158,4 @@ if __name__ == '__main__':
         f.write('\n')
     
     f.close()
-    os.system('cp dummy_tok.jsonl ../data/')
+    os.system('cp dummy_tok{}.jsonl ../data/'.format(teststr))

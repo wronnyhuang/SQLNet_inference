@@ -1,4 +1,5 @@
 import json
+from time import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,8 +12,7 @@ from modules.sqlnet_condition_predict import SQLNetCondPredictor
 
 
 class SQLNet(nn.Module):
-    def __init__(self, word_emb, N_word, N_h=100, N_depth=2,
-            gpu=False, use_ca=True, trainable_emb=False):
+    def __init__(self, word_emb, N_word, N_h=100, N_depth=2, gpu=False, use_ca=True, trainable_emb=False):
         super(SQLNet, self).__init__()
         self.use_ca = use_ca
         self.trainable_emb = trainable_emb
@@ -55,8 +55,11 @@ class SQLNet(nn.Module):
         self.softmax = nn.Softmax()
         self.log_softmax = nn.LogSoftmax()
         self.bce_logit = nn.BCEWithLogitsLoss()
-        if gpu:
-            self.cuda()
+        
+        print 'putting sqlnet on cuda'
+        tic = time()
+        if gpu: self.cuda()
+        print 'time to put on cuda: ' + str(time() - tic)
 
 
     def generate_gt_where_seq(self, q, col, query):

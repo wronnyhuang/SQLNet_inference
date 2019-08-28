@@ -55,7 +55,7 @@ if __name__ == '__main__':
                 trainable_emb = True)
 
     if args.train_emb:
-        agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args)
+        agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args, savedstr='')
         print "Loading from %s"%agg_m
         model.agg_pred.load_state_dict(torch.load(agg_m))
         print "Loading from %s"%sel_m
