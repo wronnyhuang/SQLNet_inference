@@ -1,4 +1,5 @@
-# SQLNet with custom inference
+# SQLNet with Custom Inference
+`W. Ronny Huang // ronny.huang@ey.com`
 
 This repo provides an implementation of the SQLNet neural network for predicting SQL queries on [WikiSQL dataset](https://github.com/salesforce/WikiSQL) and on your own custom dataset. The original paper on SQLNet is available at [here](https://arxiv.org/abs/1711.04436).
 
@@ -100,11 +101,11 @@ Test a trained Seq2SQL model with Reinforcement learning
 python test.py --baseline --dataset 1 --rl
 ```
 
-## Citation
+## Citation of original work
 
 > Xiaojun Xu, Chang Liu, Dawn Song. 2017. SQLNet: Generating Structured Queries from Natural Language Without Reinforcement Learning.
 
-## Bibtex
+## Bibtex of original work
 
 ```
 @article{xu2017sqlnet,
