@@ -83,7 +83,7 @@ if __name__ == '__main__':
         agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args)
 
     # load model
-    agg_m, sel_m, cond_m = best_model_name(args, savedstr='_mconly')
+    agg_m, sel_m, cond_m = best_model_name(args, savedstr='_pretrain_wikisql')
     print('==> best model names:', agg_m, sel_m, cond_m)
     print "Loading from %s"%agg_m
     model.agg_pred.load_state_dict(torch.load(agg_m))

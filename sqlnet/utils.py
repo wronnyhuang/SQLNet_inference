@@ -298,12 +298,12 @@ def epoch_acc(model, batch_size, sql_data, table_data, pred_entry, write=False, 
         pred_queries = model.gen_query(score, q_seq, col_seq, raw_q_seq, raw_col_seq, pred_entry)
         one_err, tot_err = model.check_acc(raw_data, pred_queries, query_gt, pred_entry)
         
-        formatted = format_preds(raw_q_seq, raw_col_seq, pred_queries)
-        if epoch is not None and not epoch % 10:
-            for line in formatted.split('\n'):
-                print(line)
-                if bool(write):
-                    f.write(line + '\n')
+        # formatted = format_preds(raw_q_seq, raw_col_seq, pred_queries)
+        # if epoch is not None and not epoch % 10:
+        #     for line in formatted.split('\n'):
+        #         print(line)
+        #         if bool(write):
+        #             f.write(line + '\n')
                     
         one_acc_num += (ed-st-one_err)
         tot_acc_num += (ed-st-tot_err)

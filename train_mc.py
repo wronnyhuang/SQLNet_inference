@@ -32,6 +32,7 @@ if __name__ == '__main__':
             help='If set, then train Seq2SQL model; default is SQLNet model.')
     parser.add_argument('--train_emb', action='store_true',
             help='Train word embedding for SQLNet(requires pretrained model).')
+    parser.add_argument('--batchsize', default=64, type=int)
     args = parser.parse_args()
     experiment.log_parameters(vars(args))
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     else:
         USE_SMALL=False
         GPU=True
-        BATCH_SIZE=64
+        BATCH_SIZE=args.batchsize
     TRAIN_ENTRY=(True, True, True)  # (AGG, SEL, COND)
     TRAIN_AGG, TRAIN_SEL, TRAIN_COND = TRAIN_ENTRY
     learning_rate = 1e-4 if args.rl else 1e-3
