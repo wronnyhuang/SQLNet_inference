@@ -117,6 +117,9 @@ tablestr = get_table(dummy_table_data, 'mock_time_machine')
 print(tablestr)
 
 ## start flask app
+# if running in docker, must also create localhost tunnel by running the following from the home folder or wherever pagekite.py is
+# python2 pagekite.py 5000 wronnyhuang.pagekite.me
+# then you can do get, i.e., the table by going to https://wronnyhuang.pagekite.me/table
 @app.route('/', methods=['GET'])
 def get_sql():
     english = request.args.get('english', default='', type=str)
