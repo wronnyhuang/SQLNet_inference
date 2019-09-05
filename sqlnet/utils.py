@@ -257,21 +257,24 @@ def infer_exec(model, batch_size, sql_data, table_data, db_path):
         sleep(5)
       
 # RONNY ADDED
-def print_table(table_data, tid):
+def get_table(table_data, tid):
     table = table_data[tid]
-    print '-' * 80
-    print '\n'
-    print 'TABLE', tid
-    print table['page_title']
-    print table['section_title']
-    print '\t'.join(table['header']).expandtabs(35)
+    p = []
+    p.append('-' * 80)
+    p.append('\n')
+    p.append('TABLE {}'.format(tid))
+    p.append(table['page_title'])
+    p.append(table['section_title'])
+    p.append('\t'.join(table['header']).expandtabs(34))
     for row in table['rows']:
-        print '\t'.join(row).expandtabs(35)
-    print '\n'
+        p.append('\t'.join(row).expandtabs(34))
+    p.append('\n')
+    return '\n'.join(p)
 
 # RONNY ADDED
-def input_tokenize_wrapper():
-    raw_q = input('English: ')
+def input_tokenize_wrapper(english):
+    # raw_q = input('English: ')
+    raw_q = english
     with open('input_question.txt', 'w') as f:
         f.write(raw_q)
     process = Popen('/opt/conda/bin/python input_tokenize_py3.py ', shell=True, stdout=PIPE, stderr=PIPE)
