@@ -110,7 +110,7 @@ def inference(english):
     infer_data[0]['question'] = raw_q_seq
     infer_data[0]['question_tok'] = q_seq
     formatted = make_pred(model, infer_data, table_data)
-    return 'SQL:' + formatted.split('\n')[0].split(',')[-1]
+    return formatted.split('\n')[0].split(',')[-1]
 
 # get dummy table
 tablestr = get_table(dummy_table_data, 'mock_time_machine')

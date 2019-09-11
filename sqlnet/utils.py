@@ -69,7 +69,7 @@ def load_dataset(dataset_id, use_small=False):
 def load_dataset_dummy(dataset_id, use_small=False, teststr=''):
     if dataset_id == 0:
         print "Loading from original dataset"
-        dummy_sql_data, dummy_table_data = load_data('data/dummy_tok{}.jsonl'.format(teststr), 'data/dummy_tok.tables.jsonl', use_small=use_small)
+        dummy_sql_data, dummy_table_data = load_data('mock/dummy_tok{}.jsonl'.format(teststr), 'mock/dummy_tok.tables.jsonl', use_small=use_small)
     return dummy_sql_data, dummy_table_data
 
 
