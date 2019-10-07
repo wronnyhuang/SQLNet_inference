@@ -64,8 +64,8 @@ if __name__ == '__main__':
     # table_data = dummy_table_data
     
     # train on mc data
-    dum_sql_data = dummy_sql_data
-    dum_table_data = dummy_table_data
+    # dum_sql_data = dummy_sql_data
+    # dum_table_data = dummy_table_data
     
     # test model on mc validation data
     dummy_sql_data, dummy_table_data = load_dataset_dummy(0, teststr='_test')
