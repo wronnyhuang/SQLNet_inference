@@ -5,6 +5,7 @@ import numpy as np
 from subprocess import Popen, PIPE
 from time import sleep
 #from nltk.tokenize import StanfordTokenizer
+from ewc import EWC, ewc_train, normal_train, test
 
 schema_re = re.compile(r'\((.+)\)')
 
