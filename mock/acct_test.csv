@@ -1,0 +1,11 @@
+account_number,age,gender,segment,accommodation_spending,food_spending,air_transportation_spending,gasoline_spending,information_technology_spending,utilities_spending,days_account_open,annual_income
+1111,27,male,low,375.9,98.94,656.05,41.13,100.23,100.23,196,75000
+2222,34,female,seasonal,621.81,111.55,338.61,44.44,79.28,79.28,158,112000
+3333,26,female,high-active,423.38,85.72,618.92,37.25,74.57,74.57,168,60000
+4444,53,male,low,202.14,102.55,244.1,55.15,92.47,92.47,259,150000
+5555,55,female,high-active,340.35,105.56,482.65,47.65,78.64,78.64,186,134000
+6666,67,female,seasonal,334.57,107.56,457.79,49.16,84.86,84.86,191,100000
+7777,55,male,low,600.98,86.36,742.42,57.08,124.42,124.42,183,1000000
+8888,29,male,seasonal,340.18,102.35,662.49,57.47,114.98,114.98,140,130000
+9999,43,female,high-active,423.92,108.54,307.33,57.23,115.44,115.44,194,145000
+1112,47,male,low,274.17,117.9,667.79,47.49,58.55,58.55,166,210000
