@@ -36,6 +36,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
 
 N_word=300
 B_word=42
+# B_word=6
 if args.toy:
     USE_SMALL=True
     GPU=True
@@ -69,6 +70,10 @@ val_table_data = dummy_table_data
 tic = time()
 print '==> loading word embedding'
 word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), load_used=args.train_emb, use_small=USE_SMALL)
+# import pickle
+# with open('glove/word_emb42B.pkl', 'rb') as f:
+#     pickle.load(f)
+    # word_emb = pickle.load(f)
 print 'time to load word emb: ' + str(time() - tic)
 
 # build sqlnet model
@@ -116,6 +121,9 @@ def inference(english):
 tablestr = get_table(dummy_table_data, 'mock_time_machine')
 print(tablestr)
 
+# USE THIS FOR DEBUGGING
+# print(inference('test question'))
+
 ## start flask app
 # if running in docker, must also create localhost tunnel by running the following from the home folder or wherever pagekite.py is
 # python2 pagekite.py 5000 wronnyhuang.pagekite.me
@@ -124,6 +132,7 @@ print(tablestr)
 def get_sql():
     english = request.args.get('english', default='', type=str)
     return inference(english)
+    # return english
 
 @app.route('/table')
 def get_table():
