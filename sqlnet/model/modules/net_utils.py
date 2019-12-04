@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 from torch.autograd import Variable
+import pdb
 
 def run_lstm(lstm, inp, inp_len, hidden=None):
     # Run the LSTM using packed sequence.
@@ -32,12 +33,11 @@ def col_name_encode(name_inp_var, name_len, col_len, enc_lstm):
     #Encode the columns.
     #The embedding of a column name is the last state of its LSTM output.
     name_hidden, _ = run_lstm(enc_lstm, name_inp_var, name_len)
-    name_out = name_hidden[tuple(range(len(name_len))), name_len-1]
+    name_out = name_hidden[tuple(range(len(name_len))),torch.LongTensor(name_len-1).cuda(),:]
     ret = torch.FloatTensor(
-            len(col_len), max(col_len), name_out.size()[1]).zero_()
+            len(col_len), int(max(col_len)), name_out.size()[1]).zero_()
     if name_out.is_cuda:
         ret = ret.cuda()
-
     st = 0
     for idx, cur_len in enumerate(col_len):
         ret[idx, :cur_len] = name_out.data[st:st+cur_len]

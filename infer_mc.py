@@ -1,3 +1,4 @@
+# from __future__ import print_function
 from comet_ml import Experiment
 
 import json
@@ -8,7 +9,7 @@ from sqlnet.model.sqlnet import SQLNet
 import numpy as np
 import datetime
 import copy
-
+import pdb
 import argparse
 import os
 from time import time
@@ -68,20 +69,34 @@ val_table_data = dummy_table_data
 
 # load word embedding
 tic = time()
-print '==> loading word embedding'
+print('==> loading word embedding')
 word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), load_used=args.train_emb, use_small=USE_SMALL)
-# import pickle
-# with open('glove/word_emb42B.pkl', 'rb') as f:
-#     pickle.load(f)
-    # word_emb = pickle.load(f)
-print 'time to load word emb: ' + str(time() - tic)
+
+#words = ['what', 'are', 'the', 'account', 'numbers', 'with', 'open', 'account', 'days', 'below', '120', 'days', '?']
+#selected_emb = {}
+#for i, key in enumerate(words):
+#    selected_emb[key] = word_emb[key]
+#import pickle
+#print('selected_emb', selected_emb)
+#f = open("glove/selected_emb.pkl","wb")
+#pickle.dump(selected_emb,f)
+#f.close()
+
+#f2 = open("glove/selected_emb.pkl", 'rb')
+#word_emb = pickle.load(f2)
+#f2.close()
+
+# with open('glove/word_emb.&dB.%dd_xc.pkl' % (B_word, N_word), encoding='utf-8') as f:
+#     # pickle.load(f)
+#     word_emb = pickle.load(f, encoding='utf-8')
+print('time to load word emb: ' + str(time() - tic))
 
 # build sqlnet model
 if not args.baseline:
     tic = time()
-    print '==> loading sqlnet constructor'
+    print('==> loading sqlnet constructor')
     model = SQLNet(word_emb, N_word=N_word, use_ca=args.ca, gpu=GPU, trainable_emb = args.train_emb)
-    print 'time to load sqlnet constructor: ' + str(time() - tic)
+    print('time to load sqlnet constructor: ' + str(time() - tic))
     assert not args.rl, "SQLNet can\'t do reinforcement learning."
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay = 0)
 
@@ -91,27 +106,28 @@ if args.train_emb:
 # load model
 agg_m, sel_m, cond_m = best_model_name(args, savedstr='_pretrain_wikisql')
 print('==> best model names:', agg_m, sel_m, cond_m)
-print "Loading from %s"%agg_m
+print("Loading from %s" % agg_m)
 model.agg_pred.load_state_dict(torch.load(agg_m))
-print "Loading from %s"%sel_m
+print("Loading from %s" % sel_m)
 model.sel_pred.load_state_dict(torch.load(sel_m))
-print "Loading from %s"%cond_m
+print("Loading from %s" % cond_m)
 model.cond_pred.load_state_dict(torch.load(cond_m))
 if args.rl or args.train_emb:
     print('train_emb is on, so loading best_model')
     agg_lm, sel_lm, cond_lm = best_model_name(args, for_load=True)
-    print "Loading from %s"%agg_lm
+    print("Loading from %s" % agg_lm)
     model.agg_pred.load_state_dict(torch.load(agg_lm))
-    print "Loading from %s"%sel_lm
+    print("Loading from %s" % sel_lm)
     model.sel_pred.load_state_dict(torch.load(sel_lm))
-    print "Loading from %s"%cond_lm
+    print("Loading from %s" % cond_lm)
     model.cond_pred.load_state_dict(torch.load(cond_lm))
 
 # function to run inference
 def inference(english):
+    # pdb.set_trace()
     infer_data = copy.deepcopy(dum_sql_data[:2])
     raw_q_seq, q_seq = input_tokenize_wrapper(english)
-    raw_q_seq = raw_q_seq.decode('utf-8')
+    # raw_q_seq = raw_q_seq.decode('utf-8')
     infer_data[0]['question'] = raw_q_seq
     infer_data[0]['question_tok'] = q_seq
     formatted = make_pred(model, infer_data, table_data)
@@ -121,8 +137,10 @@ def inference(english):
 tablestr = get_table(dummy_table_data, 'mock_time_machine')
 print(tablestr)
 
+test_question = "what are the account numbers with open account days below 120 days?"
 # USE THIS FOR DEBUGGING
-# print(inference('test question'))
+print(test_question)
+print(inference(test_question))
 
 ## start flask app
 # if running in docker, must also create localhost tunnel by running the following from the home folder or wherever pagekite.py is
@@ -140,4 +158,5 @@ def get_table():
 
 if __name__ == '__main__':
     app.run()
+    # print(inference("what are the account numbers with open account days below 120 days?"))
     

@@ -5,11 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
-from modules.word_embedding import WordEmbedding
-from modules.aggregator_predict import AggPredictor
-from modules.selection_predict import SelPredictor
-from modules.sqlnet_condition_predict import SQLNetCondPredictor
-
+from .modules.word_embedding import WordEmbedding
+from .modules.aggregator_predict import AggPredictor
+from .modules.selection_predict import SelPredictor
+from .modules.sqlnet_condition_predict import SQLNetCondPredictor
+import pdb
 
 class SQLNet(nn.Module):
     def __init__(self, word_emb, N_word, N_h=100, N_depth=2, gpu=False, use_ca=True, trainable_emb=False):
@@ -56,10 +56,10 @@ class SQLNet(nn.Module):
         self.log_softmax = nn.LogSoftmax()
         self.bce_logit = nn.BCEWithLogitsLoss()
         
-        print 'putting sqlnet on cuda'
+        print('putting sqlnet on cuda')
         tic = time()
         if gpu: self.cuda()
-        print 'time to put on cuda: ' + str(time() - tic)
+        print('time to put on cuda: ' + str(time() - tic))
 
 
     def generate_gt_where_seq(self, q, col, query):
@@ -127,6 +127,7 @@ class SQLNet(nn.Module):
             col_inp_var, col_name_len, col_len = \
                     self.embed_layer.gen_col_batch(col)
             max_x_len = max(x_len)
+            # pdb.set_trace()
             if pred_agg:
                 agg_score = self.agg_pred(x_emb_var, x_len, col_inp_var,
                         col_name_len, col_len, col_num, gt_sel=gt_sel)
@@ -232,9 +233,9 @@ class SQLNet(nn.Module):
 
     def check_acc(self, vis_info, pred_queries, gt_queries, pred_entry):
         def pretty_print(vis_data):
-            print 'question:', vis_data[0]
-            print 'headers: (%s)'%(' || '.join(vis_data[1]))
-            print 'query:', vis_data[2]
+            print('question:', vis_data[0])
+            print('headers: (%s)' % (' || '.join(vis_data[1])))
+            print('query:', vis_data[2])
 
         def gen_cond_str(conds, header):
             if len(conds) == 0:

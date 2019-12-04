@@ -1,5 +1,6 @@
+from __future__ import unicode_literals
 import json
-from lib.dbengine import DBEngine
+from .lib.dbengine import DBEngine
 import re
 import numpy as np
 from subprocess import Popen, PIPE
@@ -19,7 +20,7 @@ def load_data(sql_paths, table_paths, use_small=False):
 
     max_col_num = 0
     for SQL_PATH in sql_paths:
-        print "Loading data from %s"%SQL_PATH
+        print("Loading data from %s" % SQL_PATH)
         with open(SQL_PATH) as inf:
             for idx, line in enumerate(inf):
                 if use_small and idx >= 1000:
@@ -28,7 +29,7 @@ def load_data(sql_paths, table_paths, use_small=False):
                 sql_data.append(sql)
 
     for TABLE_PATH in table_paths:
-        print "Loading data from %s"%TABLE_PATH
+        print("Loading data from %s" % TABLE_PATH)
         with open(TABLE_PATH) as inf:
             for line in inf:
                 tab = json.loads(line.strip())
@@ -41,7 +42,7 @@ def load_data(sql_paths, table_paths, use_small=False):
 
 def load_dataset(dataset_id, use_small=False):
     if dataset_id == 0:
-        print "Loading from original dataset"
+        print("Loading from original dataset")
         sql_data, table_data = load_data('data/train_tok.jsonl',
                 'data/train_tok.tables.jsonl', use_small=use_small)
         val_sql_data, val_table_data = load_data('data/dev_tok.jsonl',
@@ -52,7 +53,7 @@ def load_dataset(dataset_id, use_small=False):
         DEV_DB = 'data/dev.db'
         TEST_DB = 'data/test.db'
     else:
-        print "Loading from re-split dataset"
+        print("Loading from re-split dataset")
         sql_data, table_data = load_data('data_resplit/train.jsonl',
                 'data_resplit/tables.jsonl', use_small=use_small)
         val_sql_data, val_table_data = load_data('data_resplit/dev.jsonl',
@@ -69,7 +70,7 @@ def load_dataset(dataset_id, use_small=False):
 
 def load_dataset_dummy(dataset_id, use_small=False, teststr=''):
     if dataset_id == 0:
-        print "Loading from original dataset"
+        print("Loading from original dataset")
         dummy_sql_data, dummy_table_data = load_data('mock/dummy_tok{}.jsonl'.format(teststr), 'mock/dummy_tok.tables.jsonl', use_small=use_small)
     return dummy_sql_data, dummy_table_data
 
@@ -228,16 +229,16 @@ def infer_exec(model, batch_size, sql_data, table_data, db_path):
             # except:
             #     ret_pred = None
             # isCorrect = (ret_gt == ret_pred)
-            print "==> Here's an example"
-            print 'English: ', raw_q_seq[0]
-            print 'SQL: ', raw_query
+            print("==> Here's an example")
+            print('English: ', raw_q_seq[0])
+            print('SQL: ', raw_query)
             # print 'Execution: ', str(ret_pred[0]).encode('utf-8') if ret_pred else 'null'
             # print 'Correct: ', isCorrect
-            print '\n'
+            print('\n')
             break
 
         # INFERENCE TIME!
-        print '==> Your turn, type a question about this table'
+        print('==> Your turn, type a question about this table')
         raw_q_seq, q_seq = input_tokenize_wrapper()
         raw_q_seq = raw_q_seq.decode('utf-8')
         q_seq = [w.decode('utf-8') for w in q_seq]
@@ -250,10 +251,10 @@ def infer_exec(model, batch_size, sql_data, table_data, db_path):
             #     ret_pred = engine.execute(tid, sql_pred['sel'], sql_pred['agg'], sql_pred['conds'])
             # except:
             #     ret_pred = '<Failed>'
-            print 'ENGLISH: ', raw_q_seq[0]
-            print 'SQL: ', raw_query
+            print('ENGLISH: ', raw_q_seq[0])
+            print('SQL: ', raw_query)
             # print 'Execution: ', str(ret_pred[0]).encode('utf-8') if ret_pred else 'null'
-            print '\n\n'
+            print('\n\n')
             break
         st += 1
         sleep(5)
@@ -429,18 +430,18 @@ def epoch_reinforce_train(model, optimizer, batch_size, sql_data, table_data, db
 
 def load_word_emb(file_name, load_used=False, use_small=False):
     if not load_used:
-        print ('Loading word embedding from %s'%file_name)
+        print('Loading word embedding from %s' % file_name)
         ret = {}
-        with open(file_name) as inf:
+        with open(file_name, encoding='utf-8') as inf:
             for idx, line in enumerate(inf):
                 if (use_small and idx >= 5000):
                     break
                 info = line.strip().split(' ')
                 if info[0].lower() not in ret:
-                    ret[info[0]] = np.array(map(lambda x:float(x), info[1:]))
+                    ret[info[0]] = np.array(list(map(lambda x:float(x), info[1:])))
         return ret
     else:
-        print ('Load used word embedding')
+        print('Load used word embedding')
         with open('glove/word2idx.json') as inf:
             w2i = json.load(inf)
         with open('glove/usedwordemb.npy') as inf:
