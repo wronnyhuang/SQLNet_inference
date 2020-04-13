@@ -1,3 +1,4 @@
+from __future__ import division
 import json
 from time import time
 import torch
@@ -211,7 +212,7 @@ class SQLNet(nn.Module):
                     cond_op_truth_var = Variable(data)
                 cond_op_pred = cond_op_score[b, :len(truth_num[b][4])]
                 loss += (self.CE(cond_op_pred, cond_op_truth_var) \
-                        / len(truth_num))
+                        / float(len(truth_num)))
 
             #Evaluate the strings of conditions
             for b in range(len(gt_where)):
@@ -227,7 +228,7 @@ class SQLNet(nn.Module):
                     str_end = len(cond_str_truth)-1
                     cond_str_pred = cond_str_score[b, idx, :str_end]
                     loss += (self.CE(cond_str_pred, cond_str_truth_var) \
-                            / (len(gt_where) * len(gt_where[b])))
+                            / float(len(gt_where) * len(gt_where[b])))
 
         return loss
 
@@ -243,7 +244,7 @@ class SQLNet(nn.Module):
             cond_str = []
             for cond in conds:
                 cond_str.append(header[cond[0]] + ' ' +
-                    self.COND_OPS[cond[1]] + ' ' + unicode(cond[2]).lower())
+                    self.COND_OPS[cond[1]] + ' ' + cond[2]).lower()
             return 'WHERE ' + ' AND '.join(cond_str)
 
         pred_agg, pred_sel, pred_cond = pred_entry
@@ -276,7 +277,7 @@ class SQLNet(nn.Module):
                 if len(cond_pred) != len(cond_gt):
                     flag = False
                     cond_num_err += 1
-
+                # print('cond_gt_col, cond_pred_col: ', cond_gt, cond_pred)
                 if flag and set(x[0] for x in cond_pred) != \
                         set(x[0] for x in cond_gt):
                     flag = False
@@ -287,6 +288,8 @@ class SQLNet(nn.Module):
                         break
                     gt_idx = tuple(
                             x[0] for x in cond_gt).index(cond_pred[idx][0])
+                    
+                    # print('cond_gt_op, cond_pred_op: ', cond_gt[gt_idx][1], cond_pred[idx][1])
                     if flag and cond_gt[gt_idx][1] != cond_pred[idx][1]:
                         flag = False
                         cond_op_err += 1
@@ -295,9 +298,9 @@ class SQLNet(nn.Module):
                     if not flag:
                         break
                     gt_idx = tuple(
-                            x[0] for x in cond_gt).index(cond_pred[idx][0])
-                    if flag and unicode(cond_gt[gt_idx][2]).lower() != \
-                            unicode(cond_pred[idx][2]).lower():
+                            x[0] for x in cond_gt).index(cond_pred[idx][0]) 
+                    # print('cond_gt_val, cong_pred_val:', cond_gt[gt_idx][2].lower(), cond_pred[idx][2].lower())                   
+                    if flag and str(cond_gt[gt_idx][2]).lower() != str(cond_pred[idx][2]).lower():
                         flag = False
                         cond_val_err += 1
 
@@ -307,7 +310,8 @@ class SQLNet(nn.Module):
 
             if not good:
                 tot_err += 1
-
+        # print('(agg_err, sel_err, cond_err)m tot_err', (agg_err, sel_err, cond_err), tot_err)
+        #pdb.set_trace()
         return np.array((agg_err, sel_err, cond_err)), tot_err
 
 

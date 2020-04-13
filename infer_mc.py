@@ -1,6 +1,5 @@
-# from __future__ import print_function
+from __future__ import division
 from comet_ml import Experiment
-
 import json
 import torch
 from sqlnet.utils import *
@@ -14,7 +13,10 @@ import argparse
 import os
 from time import time
 from flask import Flask, request
-app = Flask(__name__)
+import sys
+
+
+app = Flask(__name__) 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', default='2,3')
@@ -52,7 +54,7 @@ learning_rate = 1e-4 if args.rl else 1e-3
 
 # load wikisql
 sql_data, table_data, val_sql_data, val_table_data, test_sql_data, test_table_data, TRAIN_DB, DEV_DB, TEST_DB = load_dataset(args.dataset, use_small=USE_SMALL)
-
+pdb.set_trace()
 # concatenate mastercard dummy dataset with wikisql
 dummy_sql_data, dummy_table_data = load_dataset_dummy(0)
 [sql_data.extend(dummy_sql_data) for _ in range(100)]
@@ -140,9 +142,22 @@ print(tablestr)
 test_question = "what are the account numbers with open account days below 120 days?"
 # USE THIS FOR DEBUGGING
 print(test_question)
-print(inference(test_question))
+# print(inference(test_question))
 
-## start flask app
+question_list = ["how many accounts whose gender is female and spend less than 100 in food",
+                "tell me account number that spend more than 100 in information technology and with age under 30",
+                "how many distinct accounts",
+                "what is minimum age of users?",
+                "what is the average food spending of users who are between the age of 20 and 30", 
+                "present the users who spent less than 100 in food and whose gender is female",
+                "how many users who spend less than 100 in food and whose gender is female"]
+
+
+# for i, q in enumerate(question_list):
+#    print('i', i, 'q:', q)
+#    print("sql:", inference(q))
+
+# start flask app
 # if running in docker, must also create localhost tunnel by running the following from the home folder or wherever pagekite.py is
 # python2 pagekite.py 5000 wronnyhuang.pagekite.me
 # then you can do get, i.e., the table by going to https://wronnyhuang.pagekite.me/table
@@ -157,6 +172,22 @@ def get_table():
     return tablestr
 
 if __name__ == '__main__':
-    app.run()
+   # app.run()
     # print(inference("what are the account numbers with open account days below 120 days?"))
     
+    test_question = "what are the account numbers with open account days below 120 days?"
+    # print('test_question:', test_question)
+    # print(inference(test_question))
+    print('python version: \n', sys.version)
+    try:
+        while True:
+            question = input('what is your question?   \n')
+            print('SQL query: \n') 
+            print(inference(question))
+            print('\n')
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except Exception as e:
+        print('Exception: ', str(e))
+
+            

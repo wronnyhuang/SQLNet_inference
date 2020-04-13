@@ -32,8 +32,10 @@ def run_lstm(lstm, inp, inp_len, hidden=None):
 def col_name_encode(name_inp_var, name_len, col_len, enc_lstm):
     #Encode the columns.
     #The embedding of a column name is the last state of its LSTM output.
+#    pdb.set_trace() 
     name_hidden, _ = run_lstm(enc_lstm, name_inp_var, name_len)
     name_out = name_hidden[tuple(range(len(name_len))),torch.LongTensor(name_len-1).cuda(),:]
+   # name_out = name_hidden[tuple(range(len(name_len))), name_len-1] 
     ret = torch.FloatTensor(
             len(col_len), int(max(col_len)), name_out.size()[1]).zero_()
     if name_out.is_cuda:

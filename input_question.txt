@@ -1,1 +1,1 @@
-what are the account numbers with open account days below 120 days?
+count the number of users who spend less than 100 in food and is in female gender?

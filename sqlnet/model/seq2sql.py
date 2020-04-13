@@ -176,7 +176,7 @@ class Seq2SQL(nn.Module):
                 cond_pred_score = cond_score[b, :len(gt_where[b])-1]
 
                 loss += ( self.CE(
-                    cond_pred_score, cond_truth_var) / len(gt_where) )
+                    cond_pred_score, cond_truth_var) // len(gt_where) )
 
         return loss
 

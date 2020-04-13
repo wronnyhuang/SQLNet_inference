@@ -1,5 +1,5 @@
 from comet_ml import Experiment
-experiment = Experiment(api_key="vPCPPZrcrUBitgoQkvzxdsh9k", parse_args=False, project_name='sqlnet', workspace="wronnyhuang")
+experiment = Experiment(api_key="h6lZrcpYkZkZsNOkAOU3IW8wD", parse_args=False, project_name='sqlnet', workspace="xchen011")
 experiment.set_name('test_mc')
 
 import json
@@ -12,6 +12,7 @@ import datetime
 import os
 
 import argparse
+import pdb
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -30,7 +31,7 @@ if __name__ == '__main__':
             help='Use trained word embedding for SQLNet.')
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-
+    pdb.set_trace()
     N_word=300
     B_word=42
     if args.toy:
@@ -42,40 +43,41 @@ if __name__ == '__main__':
         GPU=True
         BATCH_SIZE=64
     TEST_ENTRY=(True, True, True)  # (AGG, SEL, COND)
-
-    dummy_sql_data, dummy_table_data = load_dataset_dummy(args.dataset, use_small=USE_SMALL)
+    # dummy_sql_data, dummy_table_data = load_dataset_dummy(args.dataset, use_small=USE_SMALL)
+    _, _, _, _, dummy_sql_data, dummy_table_data, _, _, _ = load_dataset(args.dataset, use_small=USE_SMALL)
 
     word_emb = load_word_emb('glove/glove.%dB.%dd.txt'%(B_word,N_word), \
-        load_used=True, use_small=USE_SMALL) # load_used can speed up loading
+        load_used=False, use_small=USE_SMALL) # load_used can speed up loading
+
 
     if args.baseline:
         model = Seq2SQL(word_emb, N_word=N_word, gpu=GPU, trainable_emb = True)
     else:
         model = SQLNet(word_emb, N_word=N_word, use_ca=args.ca, gpu=GPU,
-                trainable_emb = True)
+                trainable_emb = args.train_emb)
 
     if args.train_emb:
         agg_m, sel_m, cond_m, agg_e, sel_e, cond_e = best_model_name(args, savedstr='')
-        print "Loading from %s"%agg_m
+        print("Loading from %s" % agg_m)
         model.agg_pred.load_state_dict(torch.load(agg_m))
-        print "Loading from %s"%sel_m
+        print("Loading from %s" % sel_m)
         model.sel_pred.load_state_dict(torch.load(sel_m))
-        print "Loading from %s"%cond_m
+        print("Loading from %s" % cond_m)
         model.cond_pred.load_state_dict(torch.load(cond_m))
-        print "Loading from %s"%agg_e
+        print("Loading from %s" % agg_e)
         model.agg_embed_layer.load_state_dict(torch.load(agg_e))
-        print "Loading from %s"%sel_e
+        print("Loading from %s" % sel_e)
         model.sel_embed_layer.load_state_dict(torch.load(sel_e))
-        print "Loading from %s"%cond_e
+        print("Loading from %s" % cond_e)
         model.cond_embed_layer.load_state_dict(torch.load(cond_e))
     else:
-        agg_m, sel_m, cond_m = best_model_name(args)
-        print "Loading from %s"%agg_m
+        agg_m, sel_m, cond_m = best_model_name(args, savedstr='_pretrain_wikisql')
+        print("Loading from %s" % agg_m)
         model.agg_pred.load_state_dict(torch.load(agg_m))
-        print "Loading from %s"%sel_m
+        print("Loading from %s" % sel_m)
         model.sel_pred.load_state_dict(torch.load(sel_m))
-        print "Loading from %s"%cond_m
+        print("Loading from %s" % cond_m)
         model.cond_pred.load_state_dict(torch.load(cond_m))
 
     val_acc = epoch_acc(model, BATCH_SIZE, dummy_sql_data, dummy_table_data, TEST_ENTRY, write=True)
-    print "Dummy acc_qm: %s;\n  breakdown on (agg, sel, where): %s"%val_acc
+    print("Dummy acc_qm: %s;\n  breakdown on (agg, sel, where): %s" % val_acc)
